@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Shubham Kumar — GIS Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0D1B2A;
+    --slate:  #1E3A5F;
+    --blue:   #2D5F8A;
+    --sand:   #C9A96E;
+    --sand-lt:#E8D5A8;
+    --fog:    #8BA0B4;
+    --light:  #F0EDE6;
+    --white:  #FAFAF8;
+    --text:   #1A2634;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── NAV ─────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 3rem;
+    background: rgba(13,27,42,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(201,169,110,0.2);
+  }
+  .nav-logo {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--sand);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--fog);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--sand); }
+
+  /* ── HERO ────────────────────────────────── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; align-items: center;
+    background: var(--navy);
+    overflow: hidden;
+    padding: 0 3rem;
+  }
+
+  /* Topographic SVG background */
+  .topo-bg {
+    position: absolute; inset: 0;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* Grid overlay */
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(45,95,138,0.15) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(45,95,138,0.15) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  .hero-content { position: relative; z-index: 2; max-width: 700px; }
+
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--sand);
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block; width: 32px; height: 1px;
+    background: var(--sand);
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 span { color: var(--sand); }
+
+  .hero-desc {
+    color: var(--fog);
+    font-size: 1.05rem;
+    font-weight: 300;
+    max-width: 500px;
+    margin-bottom: 2.5rem;
+    line-height: 1.8;
+  }
+
+  .hero-coords {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: rgba(139,160,180,0.5);
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn-primary {
+    padding: 0.75rem 1.75rem;
+    background: var(--sand);
+    color: var(--navy);
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border: none; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--sand-lt); transform: translateY(-1px); }
+
+  .btn-ghost {
+    padding: 0.75rem 1.75rem;
+    background: transparent;
+    color: var(--fog);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border: 1px solid rgba(139,160,180,0.3);
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--sand); color: var(--sand); }
+
+  /* Scroll indicator */
+  .scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    color: rgba(139,160,180,0.4);
+    font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, rgba(201,169,110,0.6), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* ── SECTIONS SHARED ─────────────────────── */
+  section { padding: 6rem 3rem; }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--sand);
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1; max-width: 48px; height: 1px;
+    background: var(--sand);
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 3rem;
+    line-height: 1.2;
+  }
+
+  /* ── ABOUT ───────────────────────────────── */
+  #about { background: var(--light); }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: #3D5068;
+    font-size: 1rem;
+    line-height: 1.9;
+    margin-bottom: 1.25rem;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .stat-box {
+    background: var(--white);
+    border: 1px solid rgba(201,169,110,0.3);
+    padding: 1.25rem;
+    border-left: 3px solid var(--sand);
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 0.72rem;
+    color: var(--fog);
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .skills-panel {
+    background: var(--navy);
+    padding: 2rem;
+    color: var(--white);
+  }
+  .skills-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--sand);
+    margin-bottom: 1.5rem;
+  }
+  .skill-item {
+    margin-bottom: 1.25rem;
+  }
+  .skill-header {
+    display: flex; justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--fog);
+    margin-bottom: 0.4rem;
+  }
+  .skill-bar {
+    height: 3px;
+    background: rgba(139,160,180,0.2);
+    position: relative;
+  }
+  .skill-fill {
+    position: absolute; top: 0; left: 0; bottom: 0;
+    background: linear-gradient(to right, var(--sand), var(--sand-lt));
+    animation: fillBar 1.4s ease-out forwards;
+    width: 0;
+  }
+  @keyframes fillBar { to { width: var(--pct); } }
+
+  .lang-row {
+    display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap;
+  }
+  .lang-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid rgba(201,169,110,0.4);
+    color: var(--sand);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── EXPERIENCE ──────────────────────────── */
+  #experience { background: var(--white); }
+
+  .exp-card {
+    background: var(--light);
+    border: 1px solid rgba(30,58,95,0.12);
+    padding: 2.5rem;
+    border-left: 4px solid var(--sand);
+    position: relative;
+  }
+  .exp-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    color: var(--white);
+    background: var(--blue);
+    padding: 0.25rem 0.6rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  .exp-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--navy);
+    margin-bottom: 0.35rem;
+  }
+  .exp-org {
+    font-size: 0.85rem;
+    color: var(--blue);
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+  .exp-desc {
+    font-size: 0.92rem;
+    color: #3D5068;
+    line-height: 1.8;
+  }
+
+  /* ── PROJECTS ────────────────────────────── */
+  #projects { background: var(--navy); }
+  #projects .section-title { color: var(--white); }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .project-card {
+    background: rgba(30,58,95,0.5);
+    border: 1px solid rgba(201,169,110,0.15);
+    padding: 2rem;
+    transition: border-color 0.25s, transform 0.2s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .project-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--sand), transparent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .project-card:hover { border-color: rgba(201,169,110,0.4); transform: translateY(-3px); }
+  .project-card:hover::before { transform: scaleX(1); }
+
+  .project-icon {
+    width: 40px; height: 40px;
+    margin-bottom: 1.25rem;
+    opacity: 0.8;
+  }
+  .project-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--white);
+    margin-bottom: 0.75rem;
+  }
+  .project-desc {
+    font-size: 0.85rem;
+    color: var(--fog);
+    line-height: 1.75;
+  }
+  .project-tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .project-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(139,160,180,0.25);
+    color: var(--fog);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── EDUCATION ───────────────────────────── */
+  #education { background: var(--light); }
+
+  .edu-timeline { position: relative; padding-left: 2rem; }
+  .edu-timeline::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--sand), rgba(201,169,110,0.1));
+  }
+  .edu-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+    padding-left: 1.5rem;
+  }
+  .edu-item::before {
+    content: '';
+    position: absolute; left: -2.35rem; top: 0.35rem;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--sand);
+    border: 2px solid var(--light);
+    box-shadow: 0 0 0 2px var(--sand);
+  }
+  .edu-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--sand);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+  }
+  .edu-degree {
+    font-weight: 600;
+    color: var(--navy);
+    font-size: 0.95rem;
+    margin-bottom: 0.1rem;
+  }
+  .edu-inst {
+    font-size: 0.83rem;
+    color: var(--fog);
+  }
+
+  /* ── CONTACT ─────────────────────────────── */
+  #contact {
+    background: var(--slate);
+    text-align: center;
+  }
+  #contact .section-label { justify-content: center; }
+  #contact .section-label::after { display: none; }
+  #contact .section-title { color: var(--white); }
+
+  .contact-sub {
+    color: var(--fog);
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+  }
+  .contact-cards {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 1.25rem; margin-top: 1.5rem;
+  }
+  .contact-card {
+    display: flex; align-items: center; gap: 0.75rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem 1.5rem;
+    color: var(--fog);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 0.2s, color 0.2s;
+  }
+  .contact-card:hover { background: rgba(201,169,110,0.1); color: var(--sand); border-color: rgba(201,169,110,0.3); }
+  .contact-icon { font-size: 1rem; }
+
+  /* ── FOOTER ──────────────────────────────── */
+  footer {
+    background: var(--navy);
+    text-align: center;
+    padding: 1.5rem 3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    color: rgba(139,160,180,0.35);
+    letter-spacing: 0.12em;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────── */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.25rem; }
+    .nav-links { display: none; }
+    .hero { padding: 5rem 1.25rem 3rem; }
+    section { padding: 4rem 1.25rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .stat-row { grid-template-columns: repeat(3,1fr); gap: 0.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-line, .skill-fill { animation: none; }
+    .skill-fill { width: var(--pct); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">SK / GIS_PORTFOLIO</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#education">Education</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <!-- Topographic contour background -->
+  <svg class="topo-bg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <path d="M-100,350 Q150,200 300,380 T600,300 T900,360 T1300,280" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+    <path d="M-100,380 Q150,230 300,410 T600,330 T900,390 T1300,310" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+    <path d="M-100,410 Q150,260 300,440 T600,360 T900,420 T1300,340" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+    <path d="M-100,440 Q150,290 300,470 T600,390 T900,450 T1300,370" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+    <path d="M-100,320 Q150,170 300,350 T600,270 T900,330 T1300,250" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+    <path d="M-100,290 Q200,140 350,320 T650,240 T950,300 T1300,220" stroke="#C9A96E" stroke-width="1" fill="none"/>
+    <path d="M-100,260 Q200,110 350,290 T650,210 T950,270 T1300,190" stroke="#C9A96E" stroke-width="1" fill="none"/>
+    <path d="M-100,470 Q150,320 300,500 T600,420 T900,480 T1300,400" stroke="#C9A96E" stroke-width="1" fill="none"/>
+    <path d="M-100,500 Q150,350 300,530 T600,450 T900,510 T1300,430" stroke="#C9A96E" stroke-width="1" fill="none"/>
+    <path d="M200,0 Q350,150 280,300 T320,500 T260,700" stroke="#2D5F8A" stroke-width="1" fill="none"/>
+    <path d="M500,0 Q650,150 580,300 T620,500 T560,700" stroke="#2D5F8A" stroke-width="1" fill="none"/>
+    <path d="M800,0 Q950,150 880,300 T920,500 T860,700" stroke="#2D5F8A" stroke-width="1" fill="none"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">GIS Executive · Spatial Analyst</div>
+    <h1>Shubham<br/><span>Kumar</span></h1>
+    <p class="hero-desc">
+      Mapping the world with precision — 3+ years turning raw satellite data and spatial datasets into actionable geographic intelligence across Madhya Pradesh.
+    </p>
+    <div class="hero-coords">23.9615° N, 77.0082° E &nbsp;·&nbsp; Bhopal, Madhya Pradesh</div>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn-primary">View Projects</a>
+      <a href="#contact" class="btn-ghost">Get in Touch</a>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-line"></div>
+    <span>Scroll</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-label">Profile</div>
+  <h2 class="section-title">Translating terrain<br/>into data</h2>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        A passionate geospatial professional with a dual postgraduate background in Geography and History, complemented by a PG Diploma in Computer Applications. Currently serving as GIS Executive at MPSEDC, Bhopal, since December 2022.
+      </p>
+      <p>
+        Specialized in GIS data production, quality assessment, satellite image analysis, and spatial data infrastructure. Experienced with government-scale projects covering road networks, revenue records, land use mapping, and infrastructure POI datasets across Madhya Pradesh.
+      </p>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num">3+</div>
+          <div class="stat-lbl">Years Experience</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">6</div>
+          <div class="stat-lbl">Major Projects</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">MP</div>
+          <div class="stat-lbl">State Coverage</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="skills-panel">
+      <h3>Technical Skills</h3>
+      <div class="skill-item">
+        <div class="skill-header"><span>ArcGIS / ArcMap 10.8</span><span>Expert</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:92%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span>QGIS</span><span>Proficient</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:80%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span>Google Earth</span><span>Proficient</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:78%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span>Satellite Image Analysis</span><span>Advanced</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:85%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span>Spatial Data QC</span><span>Expert</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:90%"></div></div>
+      </div>
+      <div class="skill-item">
+        <div class="skill-header"><span>MS Office Suite</span><span>Proficient</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--pct:82%"></div></div>
+      </div>
+      <div class="lang-row">
+        <span class="lang-tag">Hindi — Native</span>
+        <span class="lang-tag">English — Fluent</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-label">Work History</div>
+  <h2 class="section-title">Professional<br/>Experience</h2>
+  <div class="exp-card">
+    <span class="exp-badge">Dec 2022 — Present</span>
+    <div class="exp-title">GIS Executive</div>
+    <div class="exp-org">Madhya Pradesh State Electronic Development Corporation (MPSEDC), Bhopal</div>
+    <p class="exp-desc">
+      Working on state-level geospatial data production and quality assurance for government initiatives. Responsibilities span the full GIS workflow — from raw satellite image interpretation and feature digitization to QC finalization and spatial adjustment. Key contributions include supporting the SAMPADA 2.0 (IGRS) project, MP State Spatial Data Infrastructure road network, revenue village mapping, and multi-year LULC change detection using LISS-IV imagery.
+    </p>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-label">Work</div>
+  <h2 class="section-title">Major Projects</h2>
+  <div class="projects-grid">
+
+    <div class="project-card">
+      <svg class="project-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="5" y="8" width="30" height="24" rx="1" stroke="#C9A96E" stroke-width="1.5"/>
+        <path d="M5 14h30M5 20h30M5 26h30M14 8v24M26 8v24" stroke="#C9A96E" stroke-width="1"/>
+        <circle cx="20" cy="20" r="3" fill="#C9A96E" opacity="0.6"/>
+      </svg>
+      <div class="project-name">SAMPADA 2.0 (IGRS)</div>
+      <p class="project-desc">Production of Guideline Location (GL) boundaries using ArcGIS. Quality assessment of sub-registrar marked locations; POI plotting from coordinates; geo-tagged data creation for health centers, warehouses, and schools; QC via satellite imagery.</p>
+      <div class="project-tags">
+        <span class="project-tag">ArcGIS</span>
+        <span class="project-tag">POI</span>
+        <span class="project-tag">Geo-tagging</span>
+        <span class="project-tag">QC</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <svg class="project-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 6 L20 10 M20 30 L20 34 M6 20 L10 20 M30 20 L34 20" stroke="#C9A96E" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="10" stroke="#C9A96E" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="5" stroke="#C9A96E" stroke-width="1"/>
+        <circle cx="20" cy="20" r="2" fill="#C9A96E"/>
+      </svg>
+      <div class="project-name">DAM POI Updation</div>
+      <p class="project-desc">Statewide updation and verification of MP Dam Points of Interest at the finest spatial resolution. Accurate location verification and attribute enrichment across all dam sites in Madhya Pradesh.</p>
+      <div class="project-tags">
+        <span class="project-tag">POI</span>
+        <span class="project-tag">Verification</span>
+        <span class="project-tag">State-scale</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <svg class="project-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="8,32 20,8 32,32" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+        <line x1="8" y1="26" x2="32" y2="26" stroke="#C9A96E" stroke-width="1"/>
+        <line x1="11" y1="20" x2="29" y2="20" stroke="#C9A96E" stroke-width="1"/>
+        <line x1="15" y1="14" x2="25" y2="14" stroke="#C9A96E" stroke-width="1"/>
+      </svg>
+      <div class="project-name">Village Map Digitization</div>
+      <p class="project-desc">Georeferencing and digitization of revenue village maps in ArcMap. Area matching of Khasra parcels against ROR data, spatial adjustment, and finalization for integration into official land records.</p>
+      <div class="project-tags">
+        <span class="project-tag">Digitization</span>
+        <span class="project-tag">Georeferencing</span>
+        <span class="project-tag">ROR</span>
+        <span class="project-tag">ArcMap</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <svg class="project-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 20 Q10 14 16 18 T26 16 T34 20" stroke="#C9A96E" stroke-width="1.5" fill="none"/>
+        <path d="M6 26 Q10 20 16 24 T26 22 T34 26" stroke="#C9A96E" stroke-width="1" fill="none"/>
+        <circle cx="16" cy="18" r="2" fill="#C9A96E" opacity="0.7"/>
+        <circle cx="26" cy="16" r="2" fill="#C9A96E" opacity="0.7"/>
+      </svg>
+      <div class="project-name">MPSSDI Road Network</div>
+      <p class="project-desc">Updation and quality control of Madhya Pradesh road network data in ArcGIS, including attribute correction for National Highway and State Highway numbers and names across the entire state road database.</p>
+      <div class="project-tags">
+        <span class="project-tag">Road Network</span>
+        <span class="project-tag">NH / SH</span>
+        <span class="project-tag">SSDI</span>
+        <span class="project-tag">QC</span>
+      </div>
+    </div>
+
+    <div class="project-card">
+      <svg class="project-icon" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="6" width="12" height="12" stroke="#C9A96E" stroke-width="1.5" fill="rgba(201,169,110,0.15)"/>
+        <rect x="22" y="6" width="12" height="12" stroke="#C9A96E" stroke-width="1.5" fill="rgba(45,95,138,0.3)"/>
+        <rect x="6" y="22" width="12" height="12" stroke="#C9A96E" stroke-width="1.5" fill="rgba(45,95,138,0.3)"/>
+        <rect x="22" y="22" width="12" height="12" stroke="#C9A96E" stroke-width="1.5" fill="rgba(201,169,110,0.15)"/>
+        <path d="M18 12 L22 12 M18 28 L22 28" stroke="#C9A96E" stroke-width="1" stroke-dasharray="2 2"/>
+      </svg>
+      <div class="project-name">LULC Change Detection</div>
+      <p class="project-desc">Using LISS-IV satellite imagery for 2021, 2023, and 2025 to perform land use/land cover mapping and multi-temporal change detection. Identified and mapped settlement expansion and other LULC transitions across Madhya Pradesh.</p>
+      <div class="project-tags">
+        <span class="project-tag">LISS-IV</span>
+        <span class="project-tag">Change Detection</span>
+        <span class="project-tag">LULC</span>
+        <span class="project-tag">Remote Sensing</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-label">Academic Background</div>
+  <h2 class="section-title">Education</h2>
+  <div class="edu-timeline">
+
+    <div class="edu-item">
+      <div class="edu-year">2024</div>
+      <div class="edu-degree">Master of Arts — Geography</div>
+      <div class="edu-inst">Barkatullah University, Bhopal</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-year">2022</div>
+      <div class="edu-degree">PG Diploma in Computer Application</div>
+      <div class="edu-inst">Makhanlal Chaturvedi University (MCU), Bhopal</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-year">2020</div>
+      <div class="edu-degree">Master of Arts — History</div>
+      <div class="edu-inst">Barkatullah University, Bhopal</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-year">2018</div>
+      <div class="edu-degree">Bachelor of Science — PCM</div>
+      <div class="edu-inst">Barkatullah University, Bhopal</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-year">2015</div>
+      <div class="edu-degree">Higher Secondary School — PCM</div>
+      <div class="edu-inst">MPBSE</div>
+    </div>
+
+    <div class="edu-item">
+      <div class="edu-year">2013</div>
+      <div class="edu-degree">High School — All Subjects</div>
+      <div class="edu-inst">MPBSE</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-label">Connect</div>
+  <h2 class="section-title">Get in Touch</h2>
+  <p class="contact-sub">Open to new projects, collaborations, and opportunities in geospatial technology.</p>
+  <div class="contact-cards">
+    <a href="mailto:shubhamjain8358@gmail.com" class="contact-card">
+      <span class="contact-icon">✉</span>
+      shubhamjain8358@gmail.com
+    </a>
+    <a href="tel:+918358945001" class="contact-card">
+      <span class="contact-icon">☏</span>
+      +91 83589 45001
+    </a>
+    <a href="#" class="contact-card">
+      <span class="contact-icon">⌖</span>
+      Ashta, Sehore · Bhopal, M.P.
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  © 2025 SHUBHAM KUMAR &nbsp;·&nbsp; GIS EXECUTIVE &nbsp;·&nbsp; BHOPAL, INDIA
+</footer>
+
+</body>
+</html>
